@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Car Sales Forecast</title>
+</head>
+<body>
+
+    <h1>Car Sales Forecast</h1>
+    <p>Enter sales from the previous 6 months.</p>
+
+    <!-- input boxes for each month -->
+    <input type="number" id="lag1" placeholder="Last month" min="0" required><br><br>
+    <input type="number" id="lag2" placeholder="2 months ago" min="0" required><br><br>
+    <input type="number" id="lag3" placeholder="3 months ago" min="0" required><br><br>
+    <input type="number" id="lag4" placeholder="4 months ago" min="0" required><br><br>
+    <input type="number" id="lag5" placeholder="5 months ago" min="0" required><br><br>
+    <input type="number" id="lag6" placeholder="6 months ago" min="0" required><br><br>
+
+    <!-- button to run prediction -->
+    <button onclick="predict()">PREDICT!</button>
+
+    <!-- where our result will appear -->
+    <h2 id="result"></h2>
+
+    <script>
+        async function predict() {
+
+            // get the 6 numbers entered by the user
+            let sales = [];
+
+            for (let i = 1; i <= 6; i++) {
+                let value = document.getElementById("lag" + i).value;
+
+                // Check that all 6 inputs are filled in
+                if (value === "" || Number(value) < 0) {
+                    document.getElementById("result").innerText =
+                        "Please enter all 6 sales values.";
+                    return;
+                }
+
+                sales.push(Number(value));
+            }
+
+            // send the numbers to FastAPI
+            let response = await fetch("/predict", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({sales: sales})
+            });
+
+            // read the prediction returned by FastAPI
+            let data = await response.json();
+
+            // display the prediction
+            document.getElementById("result").innerText =
+                "PREDICTED SALES BY JULIE'S MODEL (warning: this model is NOT accurate...): " + Math.round(data.prediction);
+        }
+    </script>
+
+</body>
+</html>
